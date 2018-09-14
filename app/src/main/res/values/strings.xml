@@ -15,7 +15,7 @@
     <string name="current_time">当前时间</string>
 
     <string name="show_date">剩余多少时间</string>
-    <string name="select_datetime">选择一个终止日</string>
+    <string name="select_datetime">选择你的生命终止日</string>
     <string name="termination_date">终止日</string>
     <string name="life_countdown">生命倒计时</string>
 

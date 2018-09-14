@@ -5,9 +5,12 @@ import android.os.Bundle
 import com.example.taoying.lifecountdown.widget.CustomDatePicker
 import com.example.taoying.utils.CountDownTimerUtil
 import com.example.taoying.utils.DateUtils.*
+import com.example.taoying.utils.SharedPreferencesUtils
 import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
+
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -17,19 +20,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //region 初始化CustomDatePicker的起始时间 start, end
-        val calendar = Calendar.getInstance()
-        var enddate = Date(System.currentTimeMillis())
-        calendar.time = enddate
-        calendar.add(Calendar.YEAR, 100)
-        enddate = calendar.time
-
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
         val start = sdf.format(Date(System.currentTimeMillis()))
-        terminationDate.text = start
-        val end = sdf.format(enddate)
-        //currentTime.text = end
-        //endregion
 
         /** 倒计时，一次1秒 */
         val timer = object : CountDownTimerUtil(CalcDiffLong(terminationDate.text.toString(), start), 1000) {
@@ -42,6 +34,31 @@ class MainActivity : AppCompatActivity() {
                 tv_CountDown.text = "倒计时完毕了"
             }
         }
+
+        //region 初始化CustomDatePicker的起始时间 start, end
+        val calendar = Calendar.getInstance()
+        var enddate = Date(System.currentTimeMillis())
+        calendar.time = enddate
+        calendar.add(Calendar.YEAR, 100)
+        enddate = calendar.time
+        val end = sdf.format(enddate)
+        //currentTime.text = end
+
+        var datetime = SharedPreferencesUtils.getSettingNote(this, "dateinfo", "生命倒计时")
+        if(datetime != null) {
+            terminationDate.text = datetime
+        }
+        else{
+            terminationDate.text = start
+        }
+        // 重置定时器的传入值
+        timer.setMillisInFuture(CalcDiffLong(terminationDate.text.toString(), start))  //设置总时长 微秒级别
+        //timer.setCountdownInterval(1000)    //设置间隔 毫秒级别
+
+        // 开启定时器
+        timer.start()
+
+        //endregion
 
         customDatePicker = CustomDatePicker(this, CustomDatePicker.ResultHandler { time ->
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA)
@@ -56,6 +73,12 @@ class MainActivity : AppCompatActivity() {
 
                 // 开启定时器
                 timer.start()
+
+                val map = HashMap<String, String>() //本地保存数据
+                map["生命倒计时"] = terminationDate.text.toString()
+                //map["dateid"] = "生命倒计时"
+                //参数（上下文，dateinfo为文件名，需要保存的数据）
+                SharedPreferencesUtils.saveSettingNote(this, "dateinfo", map)
             }
         }, start, end) // 初始化日期格式请用：yyyy-MM-dd HH:mm，否则不能正常运行
         customDatePicker!!.showSpecificTime(true) // 显示时和分
